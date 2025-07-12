@@ -5,6 +5,8 @@ services:
     container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
+    networks:
+      - my_network
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -18,10 +20,12 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - my_network
 
   mongodb:
     image: mongo:6
-    container_name: mongo_kafka
+    container_name: mongodb
     ports:
       - "27017:27017"
     environment:
@@ -30,6 +34,12 @@ services:
       MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
     volumes:
       - mongo_data:/data/db
+    networks:
+      - my_network
 
 volumes:
   mongo_data:
+
+networks:
+  my_network:
+    driver: bridge

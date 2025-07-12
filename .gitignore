@@ -1,6 +1,5 @@
 dump/
 tests/
-proj_eng2025/
 .env/
 .venv/
 __pycache__/

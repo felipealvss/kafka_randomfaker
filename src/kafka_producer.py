@@ -2,10 +2,15 @@ from kafka import KafkaProducer
 from dotenv import load_dotenv
 from datetime import datetime
 from faker import Faker
+import logging
 import random
 import time
 import json
 import os
+
+# Configuração do logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Carregar as variáveis de ambiente do arquivo .env
 load_dotenv()
@@ -87,9 +92,9 @@ def enviar_dados_kafka(producer, topic=os.getenv('KAFKA_TOPIC')):
         for m in movimentacao:
             try:
                 producer.send(topic, m)
-                print(f'✅ Dados enviados: {m}')
+                logger.info(f'✅ Dados enviados: {m}')
             except Exception as e:
-                print(f'❌ Erro ao enviar dados para o Kafka: {e}')
+                logger.info(f'❌ Erro ao enviar dados para o Kafka: {e}')
 
         producer.flush()
 
