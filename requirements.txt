@@ -1,0 +1,17 @@
+# Kafka core
+kafka-python==2.0.2
+
+# Manipulação de dados
+pandas==2.2.2
+
+# Utilitários extras
+requests==2.31.0
+
+# [opcional] Interface web (para próximos encontros)
+streamlit==1.35.0
+
+# [opcional] Geração de dados fake (próximos encontros)
+faker==25.2.0
+
+# [opcional] MongoDB (para Encontro 2)
+pymongo==4.7.2

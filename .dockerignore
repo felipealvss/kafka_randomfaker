@@ -1,0 +1,16 @@
+*.mp4
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.docx
+*.zip
+models/
+pdfs/
+pdfs_/
+uploads/
+openai/
+dump/
+tests/
+proj_eng2025/
+.env

@@ -1,0 +1,103 @@
+from kafka import KafkaProducer
+from dotenv import load_dotenv
+from datetime import datetime
+from faker import Faker
+import random
+import time
+import json
+import os
+
+# Carregar as variáveis de ambiente do arquivo .env
+load_dotenv()
+
+# Função para criar producer
+def criar_kafka_producer(server=os.getenv('KAFKA_SERVER')):
+
+    producer = KafkaProducer(
+        bootstrap_servers=server,
+        value_serializer=lambda v: json.dumps(v).encode('utf-8')
+    )
+    return producer
+
+# Criar dados fictícios de movimentações bancárias
+def gerar_movimentacao_bancaria():
+    fake = Faker()
+
+    # Definir clientes e saldos iniciais
+    base_clientes = {
+        'Davi': 1000.0,
+        'Maria': 1500.0,
+        'Felipe': 2000.0,
+        'Ana': 1200.0,
+        'Carlos': 800.0
+    }
+
+    # Lista de clientes
+    clientes = list(base_clientes.keys())
+
+    # Definição de dados aleatórios
+    #_id = random.randint(1000, 9999),
+    _id = str(fake.uuid4())
+    cliente_origem = random.choice(clientes)
+    cliente_destino = random.choice([c for c in clientes if c != cliente_origem])
+    valor = round(random.uniform(10.0, 1000.0), 2)
+    data_hora = datetime.now().isoformat()
+    tipo = random.choice(['deposito', 'saque', 'transferencia'])
+
+    # Criar dicionário de dados
+    movimentacao = {
+        'id_transacao': f"{_id}",
+        'cliente_origem': cliente_origem,
+        #'cliente_destino': cliente_destino,
+        'valor': valor,
+        'data_hora': data_hora,
+        'tipo': tipo,
+        'status': 'sucesso'
+    }
+
+    # Realizar deposito
+    '''
+    Adicionar saldo atual do cliente
+    '''
+
+    # Realizar saque
+    '''
+    Subtrair valor do saldo do cliente, se houver saldo suficiente
+    '''
+
+    # Realizar transferencia
+    '''
+    Subtrair valor do cliente de origem e adicionar ao cliente de destino, se houver saldo suficiente
+    '''
+
+    return movimentacao
+
+# Função para criar lista com movimentações bancárias
+def criar_lista_movimentacoes(lista=10):
+        movimentacoes = [gerar_movimentacao_bancaria() for _ in range(lista)]
+        return movimentacoes
+
+# Realizar envio de dados para o Kafka
+def enviar_dados_kafka(producer, topic=os.getenv('KAFKA_TOPIC')):
+
+    # Adicionar loop com while True
+    while True: 
+        movimentacao = criar_lista_movimentacoes()
+
+        for m in movimentacao:
+            try:
+                producer.send(topic, m)
+                print(f'✅ Dados enviados: {m}')
+            except Exception as e:
+                print(f'❌ Erro ao enviar dados para o Kafka: {e}')
+
+        producer.flush()
+
+        # Gerar intervalo de envio
+        time.sleep(10)
+
+# Função main para iniciar o processo
+if __name__ == "__main__":
+    producer = criar_kafka_producer()
+    enviar_dados_kafka(producer)
+    producer.close()
