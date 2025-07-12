@@ -33,13 +33,14 @@ O objetivo principal é demonstrar um fluxo de dados em tempo real:
 ├── .env                            # Variáveis de ambiente (credenciais, hosts, tópicos)
 ├── docker-compose.yml              # Definição dos serviços Docker (Kafka, Zookeeper, MongoDB)
 ├── src/
-    ├── tests/
-    │   └── verifica_dados_mongo.py # Script para verificar dados no MongoDB
+│   ├── tests/
+│   │   └── verifica_dados_mongo.py # Script para verificar dados no MongoDB
 │   ├── kafka_producer.py           # Script para gerar e enviar dados para o Kafka
 │   ├── kafka_consumer.py           # Script para consumir dados do Kafka e enviar para o MongoDB
 │   ├── mongodb_connect.py          # Módulo para conexão e operações no MongoDB
 │   └── streamlit_app.py            # Aplicação Streamlit para visualização
 ├── README.md                       # Este arquivo
+└── pyproject.toml                  # Dependências Python (Projeto utiliza Poetry, dependências totais aqui)
 └── requirements.txt                # Dependências Python (ou pyproject.toml se usar Poetry)
 ```
 -----
