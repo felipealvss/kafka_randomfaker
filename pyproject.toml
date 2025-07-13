@@ -3,9 +3,12 @@ name = "proj-eng2025"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Felipe Alves",email = "lipealvessax@gmail.com"}
+    {name = "Felipe Alves",email = "felipe.alvessilva@edu.unifor.com"}
 ]
 readme = "README.md"
+packages = [
+    { include = "src" }
+]
 requires-python = ">=3.10"
 dependencies = [
     "kafka-python (==2.0.2)",
@@ -14,7 +17,8 @@ dependencies = [
     "python-dotenv (==1.1.1)",
     "streamlit (==1.35.0)",
     "faker (==25.2.0)",
-    "pymongo (==4.7.2)"
+    "pymongo (==4.7.2)",
+    "pytest (>=8.4.1,<9.0.0)"
 ]
 
 

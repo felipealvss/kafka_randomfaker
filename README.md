@@ -2,8 +2,6 @@
 
 Este projeto simula um pipeline de dados de atividades bancárias usando **Apache Kafka** para transmissão de mensagens, **MongoDB** para armazenamento e **Streamlit** para visualização e análise em tempo real.
 
-**Repositório GitHub:** [https://github.com/felipealvss/kafka\_randomfaker](https://github.com/felipealvss/kafka_randomfaker)
-
 ---
 
 ## 🌟 Visão Geral
@@ -41,9 +39,10 @@ O objetivo principal é demonstrar um fluxo de dados em tempo real:
     ├── dashboard_streamlit.py      # Aplicação Streamlit para visualização das transações
     ├── kafka_consumer.py           # Script para consumir dados do Kafka e persistir no MongoDB
     ├── kafka_producer.py           # Script para gerar e enviar dados para o Kafka
-    ├── main.py                     # Script principal para rodar o fluxo do projeto
+    ├── main.py                     # Script principal que executa o producer, consumer e Streamlit
     ├── mongodb_connect.py          # Módulo para conexão e operações no MongoDB
     └── test
+        ├── test_producer.py        # Script para testar a função que gera dados para o Kafka
         └── verifica_dados_mongo.py # Script para testar e verificar dados no MongoDB
 ```
 
@@ -93,31 +92,29 @@ docker-compose up -d
 
 Isso irá subir os containers com as configurações predefinidas.
 
-### 4. Executar o Kafka Producer
+### 4. Executar o Projeto
 
-Para gerar transações bancárias e enviá-las para o Kafka, execute o script `kafka_producer.py`:
+O arquivo `src/main.py` é o ponto de entrada do projeto. Ele inicia simultaneamente os seguintes componentes:
 
-```bash
-python src/kafka_producer.py
-```
+* O **Kafka Producer** (que gera e envia dados para o Kafka),
+* O **Kafka Consumer** (que consome as mensagens e as envia para o MongoDB),
+* A aplicação **Streamlit** (que exibe o dashboard interativo).
 
-### 5. Executar o Kafka Consumer
-
-Para consumir as mensagens do Kafka e persistir os dados no MongoDB, execute o script `kafka_consumer.py`:
+Para executar o fluxo completo, basta rodar o script `main.py`:
 
 ```bash
-python src/kafka_consumer.py
+python src/main.py
 ```
 
-### 6. Rodar a Aplicação Streamlit
+O script irá iniciar os três processos em paralelo.
 
-Para visualizar o dashboard em tempo real, rode a aplicação Streamlit:
+### 5. Acessar o Dashboard Streamlit
+
+Após iniciar o projeto com o comando acima, você poderá acessar o dashboard no navegador através do endereço:
 
 ```bash
-streamlit run src/dashboard_streamlit.py
+http://localhost:8501
 ```
-
-O Streamlit será acessível no navegador através do endereço `http://localhost:8501`.
 
 ---
 
@@ -125,10 +122,18 @@ O Streamlit será acessível no navegador através do endereço `http://localhos
 
 Os testes podem ser executados com o framework de testes de sua escolha. Um exemplo de teste já está implementado no arquivo `src/test/verifica_dados_mongo.py`, que verifica a persistência dos dados no MongoDB.
 
-Para rodar os testes, você pode usar o `pytest`:
+Para rodar os testes, você pode usar 2 estratégias:
+
+* Utilizar o `pytest`:
 
 ```bash
-pytest src/test/verifica_dados_mongo.py
+PYTHONPATH=src poetry run pytest
+```
+
+* Executar a consulta direta via `python`:
+
+```bash
+poetry run python tests/verifica_dados_mongo.py
 ```
 
 ---

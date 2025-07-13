@@ -1,7 +1,8 @@
 dump/
-tests/
+tests/testedocker
 .env/
 .venv/
 __pycache__/
 *.pyc
 *.env
+poetry.lock
