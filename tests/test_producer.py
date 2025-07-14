@@ -1,5 +1,5 @@
 import pytest
-from kafka.kafka_producer import gerar_movimentacao_bancaria
+from python.kafka_producer import gerar_movimentacao_bancaria
 
 def test_gerar_movimentacao_bancaria():
     # Chama a função para gerar uma movimentação bancária

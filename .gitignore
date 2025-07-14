@@ -6,4 +6,4 @@ tests/testedocker
 __pycache__/
 *.pyc
 *.env
-poetry.lock
+/poetry.lock

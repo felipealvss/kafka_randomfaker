@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import os
 import logging
+import plotly.express as px
 
 # Configuração do logging para ver mensagens do PyMongo
 logging.basicConfig(level=logging.INFO)
@@ -99,16 +100,70 @@ def main():
 
     # Exibe os dados no Streamlit
     if documents:
-        # Remove o campo _id do MongoDB
-        for doc in documents:
-            doc.pop('_id', None)
+        # # Remove o campo _id do MongoDB
+        # for doc in documents:
+        #     doc.pop('_id', None)
 
         # Converte em DataFrame
         df = pd.DataFrame(documents)
 
-        # Exibe os dados
-        st.dataframe(df)
+        # --- 1. Transações por Tipo ---
+        st.subheader("📊 Transações por Tipo")
+        transacoes_por_tipo = pd.Series([doc['tipo'] for doc in documents]).value_counts()
+        st.bar_chart(transacoes_por_tipo)
 
+        # --- 2. Total de Movimentações por Cliente ---
+        st.subheader("💰 Total de Movimentações por Cliente")
+        movimentacoes_por_cliente = pd.Series([doc['cliente_origem'] for doc in documents]).value_counts()
+        movimentacoes_por_cliente_valor = {}
+        for cliente in movimentacoes_por_cliente.index:
+            movimentacoes_por_cliente_valor[cliente] = sum([doc['valor'] for doc in documents if doc['cliente_origem'] == cliente])
+        
+        movimentacoes_df = pd.DataFrame(list(movimentacoes_por_cliente_valor.items()), columns=["Cliente", "Valor Total Movimentado"])
+        st.dataframe(movimentacoes_df)
+
+        # --- 3. Transações Recusadas ---
+        st.subheader("🚫 Transações Recusadas")
+        transacoes_recusadas = [doc for doc in documents if doc['status'] == 'recusado_saldo_insuficiente']
+        if transacoes_recusadas:
+            st.write(f"Total de {len(transacoes_recusadas)} transações recusadas.")
+            st.dataframe(pd.DataFrame(transacoes_recusadas).drop(columns=['_id']))
+        else:
+            st.write("Não há transações recusadas.")
+
+        # --- 4. Detalhamento de Transações ---
+        st.subheader("🔍 Detalhamento de Transações")
+        selected_transacao = st.selectbox("Selecione uma transação", [f"ID: {doc['id_transacao']}" for doc in documents])
+        
+        if selected_transacao:
+            selected_doc = next(doc for doc in documents if f"ID: {doc['id_transacao']}" == selected_transacao)
+            st.write(f"ID: {selected_doc['id_transacao']}")
+            st.write(f"Cliente origem: {selected_doc['cliente_origem']}")
+            st.write(f"Cliente destino: {selected_doc['cliente_destino']}")
+            st.write(f"Valor: {selected_doc['valor']}")
+            st.write(f"Data/Hora: {selected_doc['data_hora']}")
+            st.write(f"Tipo: {selected_doc['tipo']}")
+            st.write(f"Status: {selected_doc['status']}")
+
+        # --- 5. Gráficos de Barras ou Pizza ---
+        st.subheader("🍰 Gráfico de Distribuição das Transações por Tipo")
+        fig = px.pie(values=transacoes_por_tipo.values, names=transacoes_por_tipo.index, title="Distribuição das Transações")
+        st.plotly_chart(fig)
+
+        # --- 6. Exportar Relatórios ---
+        st.subheader("📥 Exportar Dados")
+        @st.cache_data
+        def convert_df(df):
+            return df.to_csv(index=False).encode('utf-8')
+
+        csv = convert_df(df)
+        st.download_button(
+            label="Baixar CSV",
+            data=csv,
+            file_name='transacoes_bancarias.csv',
+            mime='text/csv',
+        )
+        
     else:
         st.write("Nenhum documento encontrado ou erro ao conectar ao MongoDB.")
 

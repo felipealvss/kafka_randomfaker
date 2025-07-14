@@ -88,16 +88,16 @@ def gerar_movimentacao_bancaria(base_clientes):
     return movimentacao
 
 # Função para criar lista com movimentações bancárias
-def criar_lista_movimentacoes(lista=10):
-        movimentacoes = [gerar_movimentacao_bancaria() for _ in range(lista)]
+def criar_lista_movimentacoes(base_clientes, lista=10):
+        movimentacoes = [gerar_movimentacao_bancaria(base_clientes) for _ in range(lista)]
         return movimentacoes
 
 # Realizar envio de dados para o Kafka
-def enviar_dados_kafka(producer, topic=os.getenv('KAFKA_TOPIC')):
+def enviar_dados_kafka(base_clientes, producer, topic=os.getenv('KAFKA_TOPIC')):
 
     # Adicionar loop com while True
     while True: 
-        movimentacao = criar_lista_movimentacoes()
+        movimentacao = criar_lista_movimentacoes(base_clientes)
 
         for m in movimentacao:
             try:
@@ -114,5 +114,5 @@ def enviar_dados_kafka(producer, topic=os.getenv('KAFKA_TOPIC')):
 # Função main para iniciar o processo
 if __name__ == "__main__":
     producer = criar_kafka_producer()
-    enviar_dados_kafka(producer)
+    enviar_dados_kafka(base_clientes, producer)
     producer.close()

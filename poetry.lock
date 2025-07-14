@@ -761,6 +761,30 @@ typing = ["typing-extensions ; python_version < \"3.10\""]
 xmp = ["defusedxml"]
 
 [[package]]
+name = "plotly"
+version = "6.2.0"
+description = "An open-source interactive data visualization library for Python"
+optional = false
+python-versions = ">=3.8"
+groups = ["main"]
+files = [
+    {file = "plotly-6.2.0-py3-none-any.whl", hash = "sha256:32c444d4c940887219cb80738317040363deefdfee4f354498cc0b6dab8978bd"},
+    {file = "plotly-6.2.0.tar.gz", hash = "sha256:9dfa23c328000f16c928beb68927444c1ab9eae837d1fe648dbcda5360c7953d"},
+]
+
+[package.dependencies]
+narwhals = ">=1.15.1"
+packaging = "*"
+
+[package.extras]
+dev = ["plotly[dev-optional]"]
+dev-build = ["build", "jupyter", "plotly[dev-core]"]
+dev-core = ["pytest", "requests", "ruff (==0.11.12)"]
+dev-optional = ["anywidget", "colorcet", "fiona (<=1.9.6) ; python_version <= \"3.8\"", "geopandas", "inflect", "numpy", "orjson", "pandas", "pdfrw", "pillow", "plotly-geo", "plotly[dev-build]", "plotly[kaleido]", "polars[timezone]", "pyarrow", "pyshp", "pytz", "scikit-image", "scipy", "shapely", "statsmodels", "vaex ; python_version <= \"3.9\"", "xarray"]
+express = ["numpy"]
+kaleido = ["kaleido (>=1.0.0)"]
+
+[[package]]
 name = "pluggy"
 version = "1.6.0"
 description = "plugin and hook calling mechanisms for python"
@@ -1503,4 +1527,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10"
-content-hash = "0b986969ae7d448ea5ec8c12b5dc458dceddbe5019f8bb1e2bcae9a54d2c9d0a"
+content-hash = "8e5119c53a3b7099c92293fe3a9df53887f63e53f9beb76bbc2b64cbfa3bd92b"
