@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import logging
 import json
 import os
-from mongodb_connect import MongoDB
+from mongo.mongodb_connect import MongoDB
 
 # Configuração do logging
 logging.basicConfig(level=logging.INFO)

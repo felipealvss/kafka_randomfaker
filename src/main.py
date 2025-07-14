@@ -3,27 +3,27 @@ import multiprocessing
 
 # Produtor de dados Kafka
 def run_producer():
-    print("Iniciando Producer...")
+    print("--- Iniciando Producer ---")
     subprocess.run([
-        "poetry", "run", "python", "src/kafka_producer.py"
+        "poetry", "run", "python", "src/kafka/kafka_producer.py"
     ], capture_output=True)
 
 # Consumidor de dados Kafka e Envio ao MongoDB
 def run_consumer():
-    print("Iniciando Consumer...")
+    print("--- Iniciando Consumer ---")
     subprocess.run([
-        "poetry", "run", "python", "src/kafka_consumer.py"
+        "poetry", "run", "python", "src/kafka/kafka_consumer.py"
     ], capture_output=True)
 
 # Aplicação Streamlit para visualização
 def run_streamlit():
-    print("Iniciando Streamlit...")
+    print("--- Iniciando Streamlit ---")
     subprocess.run([
-        "poetry", "run", "streamlit", "run", "src/dashboard_streamlit.py", "--server.port=8501", "--server.address=0.0.0.0"
+        "poetry", "run", "streamlit", "run", "src/streamlit/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"
     ], capture_output=True)
 
 if __name__ == "__main__":
-    # Rodando o producer e o consumer simultaneamente em dois processos separados
+    # Separando os processos em execuções simultâneas
     producer_process = multiprocessing.Process(target=run_producer)
     consumer_process = multiprocessing.Process(target=run_consumer)
     streamlit_process = multiprocessing.Process(target=run_streamlit)
