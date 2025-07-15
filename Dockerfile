@@ -34,7 +34,7 @@ RUN poetry install --no-root --only main --no-cache-dir
 # Copia o restante do código da aplicação para o diretório de trabalho
 # Isso inclui todos os seus scripts em src/
 COPY src ./src
-COPY .env ./ # Copia o arquivo .env. ATENÇÃO: Ver notas sobre segurança abaixo!
+COPY .env.example ./ # Copia o arquivo .env. ATENÇÃO: Ver notas sobre segurança abaixo!
 
 # Expõe a porta que o Streamlit usará (essencial para acesso externo ao dashboard)
 EXPOSE 8501

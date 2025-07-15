@@ -5,6 +5,7 @@
 *.jpeg
 *.docx
 *.zip
+*.env
 models/
 pdfs/
 pdfs_/
