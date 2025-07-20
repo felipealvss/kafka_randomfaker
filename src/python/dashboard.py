@@ -105,9 +105,9 @@ def main():
         # --- Informações gerais iniciais ---
 
         # Cria colunas para dados gerais
-        geral_col1, geral_col2, geral_col3 = st.columns([1,2,2])
+        geral_col1, geral_col2, geral_col3 = st.columns([1,1,1])
 
-        # Total de Transações
+        # Coluna 1: Total de Transações
         with geral_col1:
             st.subheader("📈 Informações de Transações")
             total_transacoes = len(documents)
@@ -115,11 +115,8 @@ def main():
             # Calcular o session state para o total de transações
             if 'total_transacoes_anterior' not in st.session_state:
                 st.session_state.total_transacoes_anterior = total_transacoes
-            # Calcular a diferença (novos registros)
-            delta_transacoes = total_transacoes - st.session_state.total_transacoes_anterior
-            # Atualizar o valor no session_state para a próxima execução
-            st.session_state.total_transacoes_anterior = total_transacoes
-
+            delta_transacoes = total_transacoes - st.session_state.total_transacoes_anterior # Calcular a diferença (novos registros)
+            st.session_state.total_transacoes_anterior = total_transacoes # Atualizar o valor no session_state para a próxima execução
             st.metric(label="Total de Transações", value=total_transacoes, delta=f"{delta_transacoes} transações")
             
             transacoes_por_tipo = pd.Series([doc['tipo'] for doc in documents]).value_counts()
@@ -129,32 +126,34 @@ def main():
                 title="Distribuição das Transações",
                 color_discrete_sequence=px.colors.qualitative.Set1
             )
-            fig2.update_traces(textinfo='percent+label')  # mostra porcentagem e label
-            fig2.update_layout(template='plotly_dark')  # tema alternativo
+            fig2.update_traces(textinfo='percent+label')
+            fig2.update_layout(template='plotly_dark')
             st.plotly_chart(fig2)
 
-        # Total de Saldo por Cliente
+        # Coluna 2: Total de Saldo por Cliente
         with geral_col2:
-            st.subheader("💰 TOP 5 Clientes com maior Saldo")
+            st.subheader("💰 Transações por Cliente")
             movimentacoes_por_cliente = pd.Series([doc['cliente_origem'] for doc in documents]).value_counts()
             movimentacoes_por_cliente_valor = {}
             for cliente in movimentacoes_por_cliente.index:
                 movimentacoes_por_cliente_valor[cliente] = sum([doc['valor'] for doc in documents if doc['cliente_origem'] == cliente])
-        
             movimentacoes_df = pd.DataFrame(list(movimentacoes_por_cliente_valor.items()), columns=["Cliente", "Valor Total de Saldo"])
-            top5_clientes = movimentacoes_df.nlargest(5, "Valor Total de Saldo")
+            top3_clientes = movimentacoes_df.nlargest(3, "Valor Total de Saldo")
 
             # Ajuste de valor na tabela
-            top5_clientes_ajustado = top5_clientes.copy()
-            top5_clientes_ajustado["Valor Total de Saldo"] = top5_clientes["Valor Total de Saldo"].apply(lambda x: f"{x:,.2f}")
+            top3_clientes_ajustado = top3_clientes.copy()
+            top3_clientes_ajustado["Valor Total de Saldo"] = top3_clientes["Valor Total de Saldo"].apply(lambda x: f"{x:,.2f}")
 
-            st.table(top5_clientes_ajustado)
+            st.text(" ")
+            st.markdown("💵 TOP 3 Clientes com maior Saldo")
+            st.table(top3_clientes_ajustado)
             #st.dataframe(movimentacoes_df)
 
             fig1 = px.bar(
-                top5_clientes, 
+                top3_clientes, 
                 x='Cliente', 
                 y='Valor Total de Saldo', 
+                title="Top 5 Clientes com Maior Saldo",
                 orientation='v',
                 color_discrete_sequence=px.colors.qualitative.Set2
             )
@@ -165,27 +164,20 @@ def main():
             with geral_col3:
                 st.subheader("📆 Transações por Mês")
                 
-                # Convertendo a coluna data_hora para datetime
                 df['data_hora'] = pd.to_datetime(df['data_hora'])
 
-                # Cálculo do valor total de transações por mês (para o TOP 1 mês)
                 transacoes_por_mes_valor = df.groupby(df['data_hora'].dt.to_period('M'))['valor'].sum()
 
-                # Selecionando o mês com o maior valor total de saldo
-                top1_mes = transacoes_por_mes_valor.nlargest(1)
+                top3_mes = transacoes_por_mes_valor.nlargest(3)
 
                 # Ajuste de valor na tabela
-                top1_mes_formatado = top1_mes.apply(lambda x: f"{x:,.2f}")
+                top3_mes_formatado = top3_mes.apply(lambda x: f"{x:,.2f}")
 
                 # Exibindo a tabela do TOP 1 Mês com Maior Valor Total de Saldo
+
                 st.text(" ")
-                st.text(" ")
-                st.text(" ")
-                st.markdown("💵 TOP 1 Mês com Maior Valor Total de Saldo")
-                st.table(top1_mes_formatado)
-                st.text(" ")
-                st.text(" ")
-                st.text(" ")
+                st.markdown("💵 TOP 3 Meses com Maior Valor Total de Saldo")
+                st.table(top3_mes_formatado)
 
                 # Agrupando por mês e contando o total de transações
                 transacoes_por_mes = df.groupby(df['data_hora'].dt.to_period('M')).size()
