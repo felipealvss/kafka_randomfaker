@@ -96,42 +96,90 @@ def main():
 
     st.divider()
 
-    st.subheader("📦 Dados MongoDB")
-
     # Exibe os dados no Streamlit
     if documents:
-        # # Remove o campo _id do MongoDB
-        # for doc in documents:
-        #     doc.pop('_id', None)
 
         # Converte em DataFrame
         df = pd.DataFrame(documents)
 
-        # --- 1. Transações por Tipo ---
-        st.subheader("📊 Transações por Tipo")
-        transacoes_por_tipo = pd.Series([doc['tipo'] for doc in documents]).value_counts()
-        st.bar_chart(transacoes_por_tipo)
+        # --- Informações gerais iniciais ---
 
-        # --- 2. Total de Movimentações por Cliente ---
-        st.subheader("💰 Total de Movimentações por Cliente")
-        movimentacoes_por_cliente = pd.Series([doc['cliente_origem'] for doc in documents]).value_counts()
-        movimentacoes_por_cliente_valor = {}
-        for cliente in movimentacoes_por_cliente.index:
-            movimentacoes_por_cliente_valor[cliente] = sum([doc['valor'] for doc in documents if doc['cliente_origem'] == cliente])
+        # Cria colunas para dados gerais
+        geral_col1, geral_col2, geral_col3 = st.columns([1,1,1])
+
+        # Total de Transações
+        with geral_col1:
+            st.subheader("📈 Informações de Transações")
+            total_transacoes = len(documents)
+            st.metric(label="Total de Transações", value=total_transacoes, delta=f"{total_transacoes} transações")
+            
+            transacoes_por_tipo = pd.Series([doc['tipo'] for doc in documents]).value_counts()
+            fig2 = px.pie(
+                values=transacoes_por_tipo.values, 
+                names=transacoes_por_tipo.index, 
+                title="Distribuição das Transações",
+                color_discrete_sequence=px.colors.qualitative.Set1
+            )
+            fig2.update_traces(textinfo='percent+label')  # mostra porcentagem e label
+            fig2.update_layout(template='plotly_dark')  # tema alternativo
+            st.plotly_chart(fig2)
+
+        # Total de Saldo por Cliente
+        with geral_col2:
+            st.subheader("💰 TOP 5 Clientes com maior Saldo")
+            movimentacoes_por_cliente = pd.Series([doc['cliente_origem'] for doc in documents]).value_counts()
+            movimentacoes_por_cliente_valor = {}
+            for cliente in movimentacoes_por_cliente.index:
+                movimentacoes_por_cliente_valor[cliente] = sum([doc['valor'] for doc in documents if doc['cliente_origem'] == cliente])
         
-        movimentacoes_df = pd.DataFrame(list(movimentacoes_por_cliente_valor.items()), columns=["Cliente", "Valor Total Movimentado"])
-        st.dataframe(movimentacoes_df)
+            movimentacoes_df = pd.DataFrame(list(movimentacoes_por_cliente_valor.items()), columns=["Cliente", "Valor Total de Saldo"])
+            top5_clientes = movimentacoes_df.nlargest(5, "Valor Total de Saldo")
 
-        # --- 3. Transações Recusadas ---
+            st.table(top5_clientes)
+            #st.dataframe(movimentacoes_df)
+
+            fig1 = px.bar(
+                top5_clientes, 
+                x='Cliente', 
+                y='Valor Total de Saldo', 
+                orientation='v',
+                color_discrete_sequence=px.colors.qualitative.Set2
+            )
+            fig1.update_layout(template='seaborn')
+            st.plotly_chart(fig1)
+
+        # Coluna 3: A definir
+        with geral_col3:
+            st.subheader("A definir...")
+
+
+        # --- Transações Recusadas ---
         st.subheader("🚫 Transações Recusadas")
-        transacoes_recusadas = [doc for doc in documents if doc['status'] == 'recusado_saldo_insuficiente']
-        if transacoes_recusadas:
-            st.write(f"Total de {len(transacoes_recusadas)} transações recusadas.")
-            st.dataframe(pd.DataFrame(transacoes_recusadas).drop(columns=['_id']))
-        else:
-            st.write("Não há transações recusadas.")
 
-        # --- 4. Detalhamento de Transações ---
+        # Criando abas para agrupamento de informações
+        recusados_col1, recusados_col2 = st.tabs(["📊 Resumo", "📋 Detalhes"])
+
+        # Filtrar dataframe por recusados
+        transacoes_recusadas = [doc for doc in documents if doc['status'] == 'recusado_saldo_insuficiente']
+        # Criar dataframe para transações recusadas
+        if transacoes_recusadas:
+            # Cria dataframe
+            df_transacoes = pd.DataFrame(transacoes_recusadas).drop(columns=['_id'])
+            colunas_recusadas = ['id_transacao', 'tipo', 'status']
+            df_transacoes_filtrado = df_transacoes[colunas_recusadas]
+
+            # Página 1: Big number em parkdown
+            recusados_col1.markdown(f'## Total de transações recusadas: **{len(transacoes_recusadas)}**')
+            st.text(" ")
+            df_transacoes_filtrado_count = pd.Series([doc['tipo'] for doc in transacoes_recusadas]).value_counts()
+            st.bar_chart(df_transacoes_filtrado_count)
+
+            # Página 2: Adicionando tabela resumo     
+            recusados_col2.dataframe(df_transacoes_filtrado)
+        else:
+            recusados_col1.write("Não há transações recusadas.")
+
+        # --- Detalhamento de Transações ---
         st.subheader("🔍 Detalhamento de Transações")
         selected_transacao = st.selectbox("Selecione uma transação", [f"ID: {doc['id_transacao']}" for doc in documents])
         
@@ -145,19 +193,25 @@ def main():
             st.write(f"Tipo: {selected_doc['tipo']}")
             st.write(f"Status: {selected_doc['status']}")
 
-        # --- 5. Gráficos de Barras ou Pizza ---
-        st.subheader("🍰 Gráfico de Distribuição das Transações por Tipo")
-        fig = px.pie(values=transacoes_por_tipo.values, names=transacoes_por_tipo.index, title="Distribuição das Transações")
-        st.plotly_chart(fig)
+        # --- Exportar Relatórios ---
+        st.subheader("📦 Dados MongoDB")
 
-        # --- 6. Exportar Relatórios ---
-        st.subheader("📥 Exportar Dados")
+        # Criar expandar para dados gerais
+        expand_export = st.expander("📦 Dados gerais")
+
+        # Criar colunas para dados gerais
+        dados_col1, dados_col2 = expand_export.tabs(["📋 Dados", "📥 Download CSV"])
+
         @st.cache_data
         def convert_df(df):
             return df.to_csv(index=False).encode('utf-8')
 
+        # Exibir dados totais do dataframe
+        dados_col1.dataframe(df)
+        
+        # Botão de download CSV
         csv = convert_df(df)
-        st.download_button(
+        dados_col2.download_button(
             label="Baixar CSV",
             data=csv,
             file_name='transacoes_bancarias.csv',
