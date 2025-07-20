@@ -105,13 +105,22 @@ def main():
         # --- Informações gerais iniciais ---
 
         # Cria colunas para dados gerais
-        geral_col1, geral_col2, geral_col3 = st.columns([1,1,1])
+        geral_col1, geral_col2, geral_col3 = st.columns([1,2,2])
 
         # Total de Transações
         with geral_col1:
             st.subheader("📈 Informações de Transações")
             total_transacoes = len(documents)
-            st.metric(label="Total de Transações", value=total_transacoes, delta=f"{total_transacoes} transações")
+
+            # Calcular o session state para o total de transações
+            if 'total_transacoes_anterior' not in st.session_state:
+                st.session_state.total_transacoes_anterior = total_transacoes
+            # Calcular a diferença (novos registros)
+            delta_transacoes = total_transacoes - st.session_state.total_transacoes_anterior
+            # Atualizar o valor no session_state para a próxima execução
+            st.session_state.total_transacoes_anterior = total_transacoes
+
+            st.metric(label="Total de Transações", value=total_transacoes, delta=f"{delta_transacoes} transações")
             
             transacoes_por_tipo = pd.Series([doc['tipo'] for doc in documents]).value_counts()
             fig2 = px.pie(
@@ -135,7 +144,11 @@ def main():
             movimentacoes_df = pd.DataFrame(list(movimentacoes_por_cliente_valor.items()), columns=["Cliente", "Valor Total de Saldo"])
             top5_clientes = movimentacoes_df.nlargest(5, "Valor Total de Saldo")
 
-            st.table(top5_clientes)
+            # Ajuste de valor na tabela
+            top5_clientes_ajustado = top5_clientes.copy()
+            top5_clientes_ajustado["Valor Total de Saldo"] = top5_clientes["Valor Total de Saldo"].apply(lambda x: f"{x:,.2f}")
+
+            st.table(top5_clientes_ajustado)
             #st.dataframe(movimentacoes_df)
 
             fig1 = px.bar(
@@ -148,10 +161,45 @@ def main():
             fig1.update_layout(template='seaborn')
             st.plotly_chart(fig1)
 
-        # Coluna 3: A definir
-        with geral_col3:
-            st.subheader("A definir...")
+            # Coluna 3: Transações por Mês
+            with geral_col3:
+                st.subheader("📆 Transações por Mês")
+                
+                # Convertendo a coluna data_hora para datetime
+                df['data_hora'] = pd.to_datetime(df['data_hora'])
 
+                # Cálculo do valor total de transações por mês (para o TOP 1 mês)
+                transacoes_por_mes_valor = df.groupby(df['data_hora'].dt.to_period('M'))['valor'].sum()
+
+                # Selecionando o mês com o maior valor total de saldo
+                top1_mes = transacoes_por_mes_valor.nlargest(1)
+
+                # Ajuste de valor na tabela
+                top1_mes_formatado = top1_mes.apply(lambda x: f"{x:,.2f}")
+
+                # Exibindo a tabela do TOP 1 Mês com Maior Valor Total de Saldo
+                st.text(" ")
+                st.text(" ")
+                st.text(" ")
+                st.markdown("💵 TOP 1 Mês com Maior Valor Total de Saldo")
+                st.table(top1_mes_formatado)
+                st.text(" ")
+                st.text(" ")
+                st.text(" ")
+
+                # Agrupando por mês e contando o total de transações
+                transacoes_por_mes = df.groupby(df['data_hora'].dt.to_period('M')).size()
+
+                # Plotando gráfico de linha para mostrar a evolução mensal
+                fig_time = px.line(
+                    transacoes_por_mes, 
+                    x=transacoes_por_mes.index.astype(str), 
+                    y=transacoes_por_mes.values,
+                    title="Transações por Mês",
+                    labels={'x': 'Mês', 'y': 'Total de Transações'}
+                )
+                fig_time.update_layout(template='plotly_dark')
+                st.plotly_chart(fig_time)
 
         # --- Transações Recusadas ---
         st.subheader("🚫 Transações Recusadas")
@@ -165,14 +213,26 @@ def main():
         if transacoes_recusadas:
             # Cria dataframe
             df_transacoes = pd.DataFrame(transacoes_recusadas).drop(columns=['_id'])
-            colunas_recusadas = ['id_transacao', 'tipo', 'status']
+            colunas_recusadas = ['id_transacao', 'tipo', 'status', 'cidade_origem']
             df_transacoes_filtrado = df_transacoes[colunas_recusadas]
 
             # Página 1: Big number em parkdown
             recusados_col1.markdown(f'## Total de transações recusadas: **{len(transacoes_recusadas)}**')
             st.text(" ")
-            df_transacoes_filtrado_count = pd.Series([doc['tipo'] for doc in transacoes_recusadas]).value_counts()
-            st.bar_chart(df_transacoes_filtrado_count)
+            # Agrupar por "cidade_origem" e "tipo" e contar os totais
+            df_grouped = df_transacoes_filtrado.groupby(['cidade_origem', 'tipo']).size().reset_index(name='total')
+
+            # Criar um gráfico de linha
+            fig_line = px.line(df_grouped, 
+                            x='cidade_origem', 
+                            y='total', 
+                            color='tipo', 
+                            title='Total de Transações por Tipo e Cidade de Origem',
+                            labels={'total': 'Total de Transações'},
+                            markers=True)
+
+            # Exibir o gráfico
+            recusados_col1.plotly_chart(fig_line, use_container_width=True)
 
             # Página 2: Adicionando tabela resumo     
             recusados_col2.dataframe(df_transacoes_filtrado)

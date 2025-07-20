@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from kafka import KafkaProducer
 from dotenv import load_dotenv
 from datetime import datetime
@@ -24,6 +25,19 @@ base_clientes = {
     'Carlos': 800.0
 }
 
+# Definir clientes e cidades
+clientes_cidades = {
+    'Davi': 'Rio de Janeiro',
+    'Maria': 'São Paulo',
+    'Felipe': 'Fortaleza',
+    'Ana': 'Belo Horizonte',
+    'Carlos': 'Minas Gerais'
+}
+
+# Definir intervalo de datas
+data_inicio = datetime(2025, 1, 1)
+data_fim = datetime(2025, 6, 30)
+
 # Função para criar producer
 def criar_kafka_producer(server=os.getenv('KAFKA_SERVER')):
 
@@ -33,8 +47,22 @@ def criar_kafka_producer(server=os.getenv('KAFKA_SERVER')):
     )
     return producer
 
+# Função para gerar datas aleatórias
+def gerar_data(data_inicio, data_fim):
+    """
+    Gera uma data e hora aleatória entre data_inicio e data_fim.
+    """
+    segundos_intervalo = int((data_fim - data_inicio).total_seconds())
+    segundos_aleatorios = random.randint(0, segundos_intervalo)
+    data_gerada = data_inicio + timedelta(seconds=segundos_aleatorios)
+
+    if data_gerada > data_fim:
+        return data_fim  # Se ultrapassar o intervalo, retorne o limite superior
+
+    return data_gerada
+
 # Criar dados fictícios de movimentações bancárias
-def gerar_movimentacao_bancaria(base_clientes):
+def gerar_movimentacao_bancaria(base_clientes, clientes_cidades, data_inicio, data_fim):
     fake = Faker()
 
     # Lista de clientes
@@ -46,18 +74,26 @@ def gerar_movimentacao_bancaria(base_clientes):
     cliente_origem = random.choice(clientes)
     cliente_destino = random.choice([c for c in clientes if c != cliente_origem])
     valor = round(random.uniform(10.0, 1000.0), 2)
-    data_hora = datetime.now().isoformat()
+    #data_hora = datetime.now().isoformat()
+    data_hora = gerar_data(data_inicio, data_fim).isoformat()
     tipo = random.choice(['deposito', 'saque', 'transferencia'])
+    cidade_origem = clientes_cidades[cliente_origem]
+    cidade_destino = clientes_cidades[cliente_destino]
+    dispositivo = random.choice(['mobile', 'web'])
 
     # Criar dicionário de dados
     movimentacao = {
-        'id_transacao': f"{_id}",
+        'id_transacao': _id,
         'cliente_origem': cliente_origem,
         'cliente_destino': cliente_destino,
         'valor': valor,
         'data_hora': data_hora,
         'tipo': tipo,
-        'status': 'sucesso'
+        'status': 'pendente',
+        'cidade_origem': cidade_origem,
+        'cidade_destino': cidade_destino,
+        'dispositivo': dispositivo,
+        'categoria_transacao': 'indefinido'
     }
 
     # Realizar ações
@@ -67,14 +103,16 @@ def gerar_movimentacao_bancaria(base_clientes):
     Transferencia: Subtrair valor do cliente de origem e adicionar ao cliente de destino, se houver saldo suficiente
     '''
     if tipo == 'deposito': # Realizar deposito
-        base_clientes[cliente_destino] == 'N/A'
+        movimentacao['cliente_destino'] = 'N/A'
         base_clientes[cliente_origem] += valor
         movimentacao['status'] = 'aprovado'
+        movimentacao['categoria_transacao'] = random.choice(['transferencia', 'pagamento_boleto'])
     elif tipo == 'saque': # Realizar saque
-        base_clientes[cliente_destino] == 'N/A'
+        movimentacao['cliente_destino'] = 'N/A'
         if base_clientes[cliente_origem] >= valor:
             base_clientes[cliente_origem] -= valor
             movimentacao['status'] = 'aprovado'
+            movimentacao['categoria_transacao'] = random.choice(['saque_caixa', 'saque_terminal', 'resgate_pontos'])
         else:
             movimentacao['status'] = 'recusado_saldo_insuficiente'
     elif tipo == 'transferencia': # Realizar transferencia
@@ -82,14 +120,15 @@ def gerar_movimentacao_bancaria(base_clientes):
             base_clientes[cliente_origem] -= valor
             base_clientes[cliente_destino] += valor
             movimentacao['status'] = 'aprovado'
+            movimentacao['categoria_transacao'] = random.choice(['ted', 'doc', 'pix'])
         else:
             movimentacao['status'] = 'recusado_saldo_insuficiente'
 
     return movimentacao
 
 # Função para criar lista com movimentações bancárias
-def criar_lista_movimentacoes(base_clientes, lista=10):
-        movimentacoes = [gerar_movimentacao_bancaria(base_clientes) for _ in range(lista)]
+def criar_lista_movimentacoes(base_clientes, clientes_cidades, data_inicio, data_fim, lista=10):
+        movimentacoes = [gerar_movimentacao_bancaria(base_clientes, clientes_cidades, data_inicio, data_fim) for _ in range(lista)]
         return movimentacoes
 
 # Realizar envio de dados para o Kafka
@@ -97,7 +136,7 @@ def enviar_dados_kafka(base_clientes, producer, topic=os.getenv('KAFKA_TOPIC')):
 
     # Adicionar loop com while True
     while True: 
-        movimentacao = criar_lista_movimentacoes(base_clientes)
+        movimentacao = criar_lista_movimentacoes(base_clientes, clientes_cidades, data_inicio, data_fim)
 
         for m in movimentacao:
             try:
