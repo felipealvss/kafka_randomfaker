@@ -1,5 +1,6 @@
 import subprocess
 import multiprocessing
+import sys
 
 # Produtor de dados Kafka
 def run_producer():
@@ -22,7 +23,7 @@ def run_streamlit():
         "poetry", "run", "streamlit", "run", "src/python/dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"
     ], capture_output=True)
 
-if __name__ == "__main__":
+def main():
     # Separando os processos em execuções simultâneas
     producer_process = multiprocessing.Process(target=run_producer)
     consumer_process = multiprocessing.Process(target=run_consumer)
@@ -33,7 +34,20 @@ if __name__ == "__main__":
     consumer_process.start()
     streamlit_process.start()
 
-    # Esperando os dois processos terminarem
-    producer_process.join()
-    consumer_process.join()
-    streamlit_process.join()
+    try:
+        producer_process.join()
+        consumer_process.join()
+        streamlit_process.join()
+    except:
+        # Encerra processos
+        producer_process.terminate()
+        consumer_process.terminate()
+        streamlit_process.terminate()
+        sys.exit(0)
+        print("Processos encerrados com sucesso.")
+    finally:
+        print("\nExecução finalizada.")
+
+if __name__ == "__main__":
+    print("Iniciando a aplicação.")
+    main()
