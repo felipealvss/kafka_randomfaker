@@ -138,8 +138,9 @@ poetry run python tests/verifica_dados_mongo.py
 
 ---
 
-## 📄 Licença
+## Equipe de projeto:
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+- [Felipe Alves da Silva](https://github.com/felipealvss) (Matrícula: 2329032)
+- [Benício Bezerra de Abreu Carneiro](https://github.com/becarneiro) (Matrícula: 2419566-0)
 
 ---
