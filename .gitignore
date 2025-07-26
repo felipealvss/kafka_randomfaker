@@ -1,5 +1,6 @@
 dump/
 tests/testedocker
+tests/teste_llm
 .pytest_cache
 .env/
 .venv/
