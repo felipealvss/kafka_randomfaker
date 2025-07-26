@@ -1,17 +1,35 @@
-# Kafka core
+# Cliente Kafka em Python para produzir e consumir mensagens de tópicos Kafka
 kafka-python==2.0.2
 
-# Manipulação de dados
+# Biblioteca poderosa para análise e manipulação de dados com DataFrames
 pandas==2.2.2
 
-# Utilitários extras
+# Biblioteca HTTP simples e elegante para realizar requisições a APIs e sites
 requests==2.31.0
 
-# [opcional] Interface web (para próximos encontros)
+# Carrega variáveis de ambiente a partir de arquivos .env
+python-dotenv==1.1.1
+
+# Framework para criação rápida de dashboards e apps interativos em Python
 streamlit==1.35.0
 
-# [opcional] Geração de dados fake (próximos encontros)
+# Gera dados fictícios realistas (nomes, endereços, datas, etc.) para testes
 faker==25.2.0
 
-# [opcional] MongoDB (para Encontro 2)
+# Driver oficial do MongoDB para Python (acesso e manipulação de dados no Mongo)
 pymongo==4.7.2
+
+# Framework de testes para escrever e executar testes automatizados em Python
+pytest>=8.4.1,<9.0.0
+
+# Biblioteca de visualização de dados interativa e baseada em JavaScript
+plotly>=6.2.0,<7.0.0
+
+# Acesso a modelos, datasets e APIs do Hugging Face (NLP, IA generativa)
+huggingface-hub>=0.34.1,<0.35.0
+
+# Biblioteca oficial da Google para interagir com os modelos Gemini
+google-generativeai>=0.8.5,<0.9.0
+
+# Exibe tabelas formatadas de forma legível (em texto, Markdown, HTML, etc.)
+tabulate>=0.9.0,<0.10.0
