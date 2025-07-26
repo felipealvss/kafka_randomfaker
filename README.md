@@ -11,7 +11,7 @@ O objetivo principal é demonstrar um fluxo de dados em tempo real:
 1. **Geração de Dados Fictícios:** Um `Producer` gera transações bancárias simuladas (depósitos, saques, transferências) com lógica de saldo.
 2. **Streaming de Mensagens:** As transações são enviadas para um tópico Kafka.
 3. **Consumo e Persistência:** Um `Consumer` lê as mensagens do Kafka e as persiste em um banco de dados MongoDB.
-4. **Visualização Analítica:** O Streamlit se conecta ao MongoDB para exibir informações analíticas e insights sobre as movimentações bancárias.
+4. **Visualização Analítica:** O Streamlit se conecta ao MongoDB para exibir informações analíticas e insights sobre as movimentações bancárias, incluindo uma camada de inteligência artificial com a **API Google Gemini** para perguntas abertas e análise contextual dos dados.
 
 ---
 
@@ -20,8 +20,27 @@ O objetivo principal é demonstrar um fluxo de dados em tempo real:
 * **Apache Kafka:** Plataforma de streaming de eventos distribuída.
 * **MongoDB:** Banco de dados NoSQL para armazenamento das transações.
 * **Streamlit:** Framework Python para construção rápida de aplicações web interativas e dashboards.
+* **Google Gemini API:** Modelo de linguagem de grande escala (LLM) para análise conversacional e extração de insights dos dados, integrado ao Streamlit.
 * **Python:** Linguagem de programação principal.
 * **Docker & Docker Compose:** Para orquestração e execução dos serviços (Kafka, Zookeeper, MongoDB).
+
+---
+
+## 🔑 Configuração da Google Gemini API
+
+Para utilizar a funcionalidade de "Perguntas com IA" e outras análises do Gemini, você precisará configurar sua chave de API:
+
+1.  **Obtenha uma Chave de API:** Acesse o [Google AI Studio](https://aistudio.google.com/app/apikey) ou o [Console do Google Cloud](https://console.cloud.google.com/apis/credentials) para gerar sua chave de API para o Gemini.
+
+2.  **Crie um arquivo `.env`:** Na raiz do projeto, crie um arquivo chamado `.env` (se já não existir) e adicione sua chave de API no seguinte formato:
+
+    ```
+    GENAI_API_KEY="SUA_CHAVE_DE_API_AQUI"
+    ```
+
+    Substitua `"SUA_CHAVE_DE_API_AQUI"` pela chave que você obteve.
+
+    **Importante:** Nunca compartilhe sua chave de API publicamente nem a inclua diretamente no código-fonte ou em repositórios públicos. O arquivo `.env` é lido localmente e não deve ser versionado (verifique se `*.env` está no seu `.gitignore`).
 
 ---
 
@@ -45,7 +64,6 @@ O objetivo principal é demonstrar um fluxo de dados em tempo real:
         ├── test_producer.py        # Script para testar a função que gera dados para o Kafka
         └── verifica_dados_mongo.py # Script para testar e verificar dados no MongoDB
 ```
-
 ---
 
 ## 📊 Visualização no Streamlit
@@ -56,6 +74,19 @@ O aplicativo Streamlit (`dashboard_streamlit.py`) se conecta ao MongoDB e fornec
 * Visualizar estatísticas agregadas (total de depósitos, saques, etc.).
 * Analisar o saldo dos clientes (se implementado no Streamlit).
 * Observar o fluxo de dados em tempo real.
+* Utilizar uma nova aba de "Perguntas com IA" para obter insights e resumos dos dados através da API Google Gemini, permitindo consultas em linguagem natural sobre o comportamento das transações.
+* Receber projeções preditivas e análises detalhadas de transações específicas, potencializadas pelo raciocínio do Gemini.
+
+---
+
+## 🖼️ Dashboard Streamlit
+
+Aqui estão capturas de telas do dashboard Streamlit:
+
+![Painel 01](docs/images/streamlit_01.png)
+![Painel 03](docs/images/streamlit_03.png)
+![Painel 04](docs/images/streamlit_04.png)
+![Painel 05](docs/images/streamlit_05.png)
 
 ---
 
